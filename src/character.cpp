@@ -5816,12 +5816,7 @@ void Character::update_bodytemp( const map &m, const weather_manager &weather )
             bp_conv = temp_corrected_by_climate_control( bp_conv );
         }
 
-        // If the player is thoroughly prepared, protect them from radiant heat.
-        int bonus_fire_warmth = 0;
-        // Otherwise, let them burn.
-        if( !( has_heatsink && has_climate_control ) ) {
-            bonus_fire_warmth = best_fire * 500;
-        }
+        int bonus_fire_warmth = best_fire * 500;
 
         const int comfortable_warmth = bonus_fire_warmth + lying_warmth;
         const int bonus_warmth = comfortable_warmth + mutation_heat_bonus + clothing_warmth_adjusted_bonus;
