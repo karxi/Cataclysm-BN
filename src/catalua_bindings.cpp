@@ -1,3 +1,4 @@
+#include <vpart_position.h>
 #ifdef LUA
 #include "catalua_bindings.h"
 
@@ -38,6 +39,7 @@
 #include "units_energy.h"
 #include "units_mass.h"
 #include "units_volume.h"
+#include "vehicle.h"
 
 std::string_view luna::detail::current_comment;
 
@@ -663,6 +665,14 @@ void cata::detail::reg_game_api( sol::state &lua )
         }
         return g->critter_at<npc>( p );
     } );
+    DOC( "Returns the Vehicle at a given tripoint, or nil if there is none." );
+    luna::set_fx( lib, "get_vehicle_at", []( const tripoint & p ) -> vehicle * {
+        map &here = get_map();
+        if ( const optional_vpart_position vp = here.veh_at( p ) ) {
+            return &vp->vehicle();
+        }
+        return nullptr;
+    } );
 
     luna::set_fx( lib, "choose_adjacent", []( const std::string & message,
     sol::optional<bool> allow_vertical ) -> sol::optional<tripoint> {
@@ -1018,6 +1028,7 @@ void cata::reg_all_bindings( sol::state &lua )
     reg_hooks_examples( lua );
     reg_types( lua );
     reg_time_types( lua );
+    reg_vehicle_family( lua );
     reg_testing_library( lua );
 }
 

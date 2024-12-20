@@ -50,6 +50,7 @@ class time_duration;
 class time_point;
 class tinymap;
 class uilist;
+class vehicle;
 struct body_part_type;
 struct damage_instance;
 struct damage_unit;
@@ -137,6 +138,7 @@ LUNA_VAL( units::angle, "Angle" );
 LUNA_VAL( units::energy, "Energy" );
 LUNA_VAL( units::mass, "Mass" );
 LUNA_VAL( units::volume, "Volume" );
+LUNA_VAL( vehicle, "Vehicle" );
 
 
 // Ids for in-game objects
