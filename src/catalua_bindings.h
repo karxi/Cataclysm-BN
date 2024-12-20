@@ -46,6 +46,8 @@ void reg_time_types( sol::state &lua );
 void reg_types( sol::state &lua );
 void reg_ui_elements( sol::state &lua );
 void reg_units( sol::state &lua );
+void reg_vehicle_family( sol::state &lua );
+void reg_vehicle( sol::state &lua );
 
 } // namespace detail
 
