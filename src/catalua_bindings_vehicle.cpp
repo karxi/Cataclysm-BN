@@ -33,6 +33,8 @@ void cata::detail::reg_vehicle( sol::state &lua )
             luna::no_constructor
         );
 
+        SET_MEMB( velocity );
+
         // Considerations:
         // find_vehicle()
         // smash()
