@@ -119,6 +119,9 @@ void cata::detail::reg_vehicle_part( sol::state &lua )
             luna::no_bases,
             luna::no_constructor
         );
+
+        // TODO: Working on implementing the Luna changes necessary for this...
+        luna::set( ut, "id", sol::property( &UT_CLASS::info ) );
     }
 #undef UT_CLASS // #define UT_CLASS vehicle_part
 }
