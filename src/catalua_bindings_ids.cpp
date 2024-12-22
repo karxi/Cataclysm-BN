@@ -24,6 +24,7 @@
 #include "recipe.h"
 #include "skill.h"
 #include "type_id.h"
+#include "veh_type.h"
 
 template<typename T, bool do_int_id>
 void reg_id( sol::state &lua )
@@ -126,6 +127,7 @@ void cata::detail::reg_game_ids( sol::state &lua )
     reg_id<species_type, false>( lua );
     reg_id<spell_type, false>( lua );
     reg_id<ter_t, true>( lua );
+    reg_id<vpart_info, false>( lua );
 
 }
 

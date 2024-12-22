@@ -1,3 +1,4 @@
+#include <type_id.h>
 #ifdef LUA
 #include "catalua_bindings.h"
 
@@ -10,6 +11,7 @@
 #include "catalua_luna_doc.h"
 
 #include "creature.h"
+#include "itype.h"
 #include "vehicle.h"
 #include "vehicle_part.h"
 #include "veh_type.h"
@@ -17,6 +19,7 @@
 // IN WAITING: TODO
 void cata::detail::reg_vehicle_family( sol::state &lua ) {
     reg_vehicle( lua );
+    reg_vpart_info( lua );
 }
 
 void cata::detail::reg_vehicle( sol::state &lua )
@@ -52,7 +55,7 @@ void cata::detail::reg_vehicle( sol::state &lua )
         SET_FX_T( start_engines, void( bool, bool ) );
 
         // TODO: Could this be more specific? What kind of calculation is it used for?
-        DOC( "Measurement of the stress applied to engines due to driving above safe speed." );
+        DOC( "Measurement of the stress applied to engines due to running above safe speed." );
         SET_FX_T( strain, float() const );
 
         // How abrupt is this?
@@ -69,6 +72,40 @@ void cata::detail::reg_vehicle( sol::state &lua )
         
     }
 #undef UT_CLASS // #define UT_CLASS vehicle
+}
+
+void cata::detail::reg_vpart_info( sol::state &lua )
+{
+#define UT_CLASS vpart_info
+    {
+        sol::usertype<UT_CLASS> ut =
+        luna::new_usertype<UT_CLASS>(
+            lua,
+            luna::no_bases,
+            luna::no_constructor
+        );
+
+        SET_MEMB_RO( id );
+        //SET_MEMB_RO( item );
+        luna::set( ut, "item", sol::readonly( &UT_CLASS::item ) );
+        SET_MEMB_N_RO( location, "layer" );
+        SET_MEMB_RO( durability );
+        SET_MEMB_N_RO( dmg_mod, "damage_mod" );
+
+        SET_MEMB_RO( difficulty );
+
+        SET_MEMB_N_RO( cargo_weight_modifier, "cargo_weight_mod" );
+
+        SET_FX_T( name, std::string() const );
+
+        luna::set_fx( ut, "get_all", []() -> std::map<vpart_id, vpart_info> {
+            std::map<vpart_id, vpart_info> rv = UT_CLASS::all(); return rv;
+        } );
+        //luna::set_fx( ut, "get_all",
+        //        sol::resolve< static const std::map<vpart_id, vpart_info> >( &UT_CLASS::all )
+        //        );
+    }
+#undef UT_CLASS // #define UT_CLASS vpart_info
 }
 
 #endif // #ifdef LUA
