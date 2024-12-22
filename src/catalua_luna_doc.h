@@ -1,4 +1,5 @@
 #pragma once
+#include <veh_type.h>
 #ifndef CATA_SRC_CATALUA_LUNA_DOC_H
 #define CATA_SRC_CATALUA_LUNA_DOC_H
 
@@ -51,6 +52,7 @@ class time_point;
 class tinymap;
 class uilist;
 class vehicle;
+class vpart_info;
 struct body_part_type;
 struct damage_instance;
 struct damage_unit;
@@ -163,6 +165,7 @@ LUNA_ID( Skill, "Skill" )
 LUNA_ID( species_type, "SpeciesType" )
 LUNA_ID( spell_type, "SpellType" )
 LUNA_ID( ter_t, "Ter" )
+LUNA_ID( vpart_info, "VPartInfo" )
 
 // Enums
 LUNA_ENUM( add_type, "AddictionType" )

@@ -1,4 +1,5 @@
 #pragma once
+#include <catalua_type_operators.h>
 #ifndef CATA_SRC_VEH_TYPE_H
 #define CATA_SRC_VEH_TYPE_H
 
@@ -131,10 +132,11 @@ struct transform_terrain_data {
 
 class vpart_info
 {
-    private:
+    public:
         /** Unique identifier for this part */
         vpart_id id;
 
+    private:
         std::optional<vpslot_engine> engine_info;
         std::optional<vpslot_wheel> wheel_info;
         std::optional<vpslot_rotor> rotor_info;
@@ -352,6 +354,8 @@ class vpart_info
         static void reset();
 
         static const std::map<vpart_id, vpart_info> &all();
+
+        LUA_TYPE_OPS( vpart_info, id );
 };
 
 struct vehicle_item_spawn {

@@ -48,6 +48,8 @@ void reg_ui_elements( sol::state &lua );
 void reg_units( sol::state &lua );
 void reg_vehicle_family( sol::state &lua );
 void reg_vehicle( sol::state &lua );
+void reg_vehicle_part( sol::state &lua );
+void reg_vpart_info( sol::state &lua );
 
 } // namespace detail
 
