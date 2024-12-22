@@ -65,6 +65,7 @@ struct npc_personality;
 struct point;
 struct species_type;
 struct tripoint;
+struct vehicle_part;
 namespace units
 {
 template<Arithmetic V, typename U>
@@ -141,6 +142,7 @@ LUNA_VAL( units::energy, "Energy" );
 LUNA_VAL( units::mass, "Mass" );
 LUNA_VAL( units::volume, "Volume" );
 LUNA_VAL( vehicle, "Vehicle" );
+LUNA_VAL( vehicle_part, "VPart" );
 
 
 // Ids for in-game objects
