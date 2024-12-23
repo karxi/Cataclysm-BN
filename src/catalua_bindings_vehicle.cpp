@@ -1,3 +1,4 @@
+#include <damage.h>
 #ifdef LUA
 #include <type_id.h>
 #include "catalua_bindings.h"
@@ -58,9 +59,14 @@ void cata::detail::reg_vehicle( sol::state &lua )
         DOC( "Returns an (int) list of vehicle parts at a given point, relative to the vehicle itself." );
         luna::set_fx( ut, "parts_at_relative",
             []( UT_CLASS & vehi, point pt, std::optional<bool> cache ) -> std::vector<int> {
-                if ( cache.has_value() ) { return vehi.parts_at_relative( pt, *cache ); }
-                else { return vehi.parts_at_relative( pt, true ); }
+                return vehi.parts_at_relative( pt, cache.has_value() ? *cache : true );
             } );
+
+        DOC( "Retrieve global tripoint of vehicle part, akin Creature.get_pos_ms()." );
+        luna::set_fx( ut, "global_part_pos", sol::overload(
+            sol::resolve<tripoint( const int & ) const>( &UT_CLASS::global_part_pos3 ),
+            sol::resolve<tripoint( const vehicle_part & ) const>( &UT_CLASS::global_part_pos3 )
+            ) );
 
         // TODO: Could this be more specific? What kind of calculation is it used for?
         DOC( "Measurement of the stress applied to engines due to running above safe speed." );
@@ -159,6 +165,7 @@ void cata::detail::reg_vehicle_part( sol::state &lua )
 
         luna::set( ut, "id", sol::property( &UT_CLASS::info ) );
         SET_MEMB_N_RO( mount, "mount_point" );
+        SET_FX_T( get_base, item & () const );
     }
 #undef UT_CLASS // #define UT_CLASS vehicle_part
 }
@@ -185,6 +192,11 @@ void cata::detail::reg_vpart_info( sol::state &lua )
         SET_MEMB_RO( difficulty );
 
         SET_MEMB_N_RO( cargo_weight_modifier, "cargo_weight_mod" );
+
+        luna::set_fx( ut, "damage_reduction",
+            []( UT_CLASS & vp ) -> std::map<damage_type, float> {
+                auto rv = vp.damage_reduction.flat; return rv;
+        } );
 
         SET_FX_T( name, std::string() const );
 
