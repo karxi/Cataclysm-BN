@@ -668,7 +668,8 @@ void cata::detail::reg_game_api( sol::state &lua )
     DOC( "Returns the Vehicle at a given tripoint, or nil if there is none." );
     luna::set_fx( lib, "get_vehicle_at", []( const tripoint & p ) -> vehicle * {
         map &here = get_map();
-        if ( const optional_vpart_position vp = here.veh_at( p ) ) {
+        if ( const optional_vpart_position vp = here.veh_at( p ) )
+        {
             return &vp->vehicle();
         }
         return nullptr;
