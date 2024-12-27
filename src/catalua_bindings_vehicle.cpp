@@ -48,6 +48,13 @@ void cata::detail::reg_vehicle( sol::state &lua )
         // coord_translate()
         // get_points()
 
+        DOC( "Returns power info for the indexed engine, accounting for size, damage, etc. If `bool` is true, assume full HP for calculations." );
+        SET_FX( part_vpower_w );
+
+        // TODO: Getting crashes from this. Why?
+        DOC( "Returns the amount of time it takes to start a given engine." );
+        SET_FX_T( engine_start_time, int( const int ) const );
+
         // TODO: Check how this interacts with the player/if it subtracts moves
         DOC( "Attempt to start a specified engine." );
         SET_FX_T( start_engine, bool( int ) );
@@ -62,7 +69,10 @@ void cata::detail::reg_vehicle( sol::state &lua )
                 return vehi.parts_at_relative( pt, cache.has_value() ? *cache : true );
             } );
 
-        DOC( "Retrieve global tripoint of vehicle part, akin Creature.get_pos_ms()." );
+        // get_parts_at
+        // Requires part_status_flag enum...
+
+        DOC( "Retrieve global tripoint of vehicle part, akin to Creature.get_pos_ms()." );
         luna::set_fx( ut, "global_part_pos", sol::overload(
             sol::resolve<tripoint( const int & ) const>( &UT_CLASS::global_part_pos3 ),
             sol::resolve<tripoint( const vehicle_part & ) const>( &UT_CLASS::global_part_pos3 )
@@ -163,6 +173,13 @@ void cata::detail::reg_vehicle_part( sol::state &lua )
             luna::no_constructor
         );
 
+        luna::set_fx( ut, sol::meta_function::to_string,
+            []( const UT_CLASS & st ) -> std::string {
+                return string_format( "%s[%s]",
+                    luna::detail::luna_traits<UT_CLASS>::name,
+                    st.info().get_id().c_str() );
+        } );
+
         luna::set( ut, "id", sol::property( &UT_CLASS::info ) );
         SET_MEMB_N_RO( mount, "mount_point" );
         SET_FX_T( get_base, item & () const );
@@ -180,6 +197,13 @@ void cata::detail::reg_vpart_info( sol::state &lua )
             luna::no_bases,
             luna::no_constructor
         );
+
+        luna::set_fx( ut, sol::meta_function::to_string,
+            []( const UT_CLASS & st ) -> std::string {
+                return string_format( "%s[%s]",
+                    luna::detail::luna_traits<UT_CLASS>::name,
+                    st.get_id().c_str() );
+        } );
 
         SET_MEMB_RO( id );
         SET_MEMB_RO( item );

@@ -405,6 +405,8 @@ class vehicle
         bool explode_fuel( int p, damage_type type );
         //damages vehicle controls and security system
         void smash_security_system();
+
+    public:
         // get vpart powerinfo for part number, accounting for variable-sized parts and hps.
         int part_vpower_w( int index, bool at_full_hp = false ) const;
 
@@ -417,6 +419,7 @@ class vehicle
         // convert vhp to watts.
         static int vhp_to_watts( int power );
 
+    private:
         //Refresh all caches and re-locate all parts
         void refresh();
 
@@ -434,12 +437,14 @@ class vehicle
                                    std::map<itype_id, float> fuel_usages,
                                    bool verbose = false, bool desc = false );
 
+    public:
         // Calculate how long it takes to attempt to start an engine
         int engine_start_time( int e ) const;
 
         // How much does the temperature effect the engine starting (0.0 - 1.0)
         double engine_cold_factor( int e ) const;
 
+    private:
         // refresh pivot_cache, clear pivot_dirty
         void refresh_pivot() const;
 
