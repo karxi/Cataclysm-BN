@@ -52,7 +52,7 @@ void cata::detail::reg_vehicle( sol::state &lua )
         SET_FX( part_vpower_w );
 
         // TODO: Getting crashes from this. Why?
-        DOC( "Returns the amount of time it takes to start a given engine." );
+        DOC( "Returns the amount of time it takes to start the engine at `int`." );
         SET_FX_T( engine_start_time, int( const int ) const );
 
         // TODO: Check how this interacts with the player/if it subtracts moves
@@ -63,17 +63,29 @@ void cata::detail::reg_vehicle( sol::state &lua )
         DOC( "Attempt to start only the vehicle's *enabled* engines." );
         SET_FX_T( start_engines, void( bool, bool ) );
 
+        // These seem to work, but TODO testing later.
+        SET_FX( part_base );
+        SET_FX( find_part );
+
         DOC( "Returns an (int) list of vehicle parts at a given point, relative to the vehicle itself." );
         luna::set_fx( ut, "parts_at_relative",
             []( UT_CLASS & vehi, point pt, std::optional<bool> cache ) -> std::vector<int> {
                 return vehi.parts_at_relative( pt, cache.has_value() ? *cache : true );
             } );
 
+        DOC( "Returns all the parts on a given layer/location of a vehicle, such as 'structure', 'fuel_source', or 'engine_block'." );
+        SET_FX_N_T( all_parts_at_location, "parts_on_layer", std::vector<int>( const std::string & ) const );
+        SET_FX_T( coord_translate, point( point ) const );
+        DOC( "Turns a map Tripoint into a relative, direction-agnostic Point for use with a Vehicle. Works well with parts_at_relative()." );
+        SET_FX_T( tripoint_to_mount, point( const tripoint & ) const );
+
         // get_parts_at
         // Requires part_status_flag enum...
 
+        SET_FX_N_T( global_pos3, "get_pos_ms", tripoint() const );
+
         DOC( "Retrieve global tripoint of vehicle part, akin to Creature.get_pos_ms()." );
-        luna::set_fx( ut, "global_part_pos", sol::overload(
+        luna::set_fx( ut, "get_part_pos_ms", sol::overload(
             sol::resolve<tripoint( const int & ) const>( &UT_CLASS::global_part_pos3 ),
             sol::resolve<tripoint( const vehicle_part & ) const>( &UT_CLASS::global_part_pos3 )
             ) );
@@ -81,7 +93,7 @@ void cata::detail::reg_vehicle( sol::state &lua )
         // TODO: Could this be more specific? What kind of calculation is it used for?
         DOC( "Measurement of the stress applied to engines due to running above safe speed." );
         SET_FX_T( strain, float() const );
-        // How abrupt is this?
+        // TODO: How abrupt is this?
         DOC( "Reduces velocity to zero." );
         SET_FX_T( stop, void( bool ) );
 
@@ -181,8 +193,14 @@ void cata::detail::reg_vehicle_part( sol::state &lua )
         } );
 
         luna::set( ut, "id", sol::property( &UT_CLASS::info ) );
+        DOC( "The relative location of this part on its Vehicle." );
         SET_MEMB_N_RO( mount, "mount_point" );
+        // XXX: DO NOT overwrite any of this!
+        // TODO: May be safe to remove now; unclear
+        SET_MEMB_RO( precalc );
+
         SET_FX_T( get_base, item & () const );
+        // TODO: set_base!
     }
 #undef UT_CLASS // #define UT_CLASS vehicle_part
 }
