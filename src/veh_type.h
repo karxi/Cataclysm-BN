@@ -132,11 +132,10 @@ struct transform_terrain_data {
 
 class vpart_info
 {
-    public:
+    private:
         /** Unique identifier for this part */
         vpart_id id;
 
-    private:
         std::optional<vpslot_engine> engine_info;
         std::optional<vpslot_wheel> wheel_info;
         std::optional<vpslot_rotor> rotor_info;

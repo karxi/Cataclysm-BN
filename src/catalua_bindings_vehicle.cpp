@@ -38,6 +38,13 @@ void cata::detail::reg_vehicle( sol::state &lua )
             luna::no_constructor
         );
 
+        luna::set_fx( ut, sol::meta_function::to_string,
+            []( const UT_CLASS & st ) -> std::string {
+                return string_format( "%s[\"%s\"]",
+                    luna::detail::luna_traits<UT_CLASS>::name,
+                    st.name );
+        } );
+
         // Considerations:
         // find_vehicle()
         // smash()
@@ -75,11 +82,14 @@ void cata::detail::reg_vehicle( sol::state &lua )
 
         DOC( "Returns all the parts on a given layer/location of a vehicle, such as 'structure', 'fuel_source', or 'engine_block'." );
         SET_FX_N_T( all_parts_at_location, "parts_on_layer", std::vector<int>( const std::string & ) const );
+        DOC( "Given a part indice and a flag, return indices of all parts on a contiguous X/Y axis with that flag." );
+        SET_FX_T( find_lines_of_parts, std::vector<std::vector<int>>( int, const std::string & ) );
+
         SET_FX_T( coord_translate, point( point ) const );
         DOC( "Turns a map Tripoint into a relative, direction-agnostic Point for use with a Vehicle. Works well with parts_at_relative()." );
         SET_FX_T( tripoint_to_mount, point( const tripoint & ) const );
 
-        // get_parts_at
+        // TODO: get_parts_at
         // Requires part_status_flag enum...
 
         SET_FX_N_T( global_pos3, "get_pos_ms", tripoint() const );
@@ -90,12 +100,32 @@ void cata::detail::reg_vehicle( sol::state &lua )
             sol::resolve<tripoint( const vehicle_part & ) const>( &UT_CLASS::global_part_pos3 )
             ) );
 
+        SET_FX( fuels_left );
+        // TODO: fuel_left overloads
+
+        SET_FX_T( total_rotor_area, double() const );
+        SET_FX_T( has_sufficient_rotorlift, bool() const );
+        SET_FX( lift_thrust_of_rotorcraft );
+        SET_FX_N_T( k_traction, "coefficient_traction", float( float ) const );
+        SET_FX( static_drag );
+
         // TODO: Could this be more specific? What kind of calculation is it used for?
         DOC( "Measurement of the stress applied to engines due to running above safe speed." );
         SET_FX_T( strain, float() const );
+
+        SET_FX_N_T( max_volume, "part_vol_max", units::volume( int ) const );
+        SET_FX_N_T( free_volume, "part_vol_free", units::volume( int ) const );
+        SET_FX_N_T( stored_volume, "part_vol_used", units::volume( int ) const );
+        // TODO: add_item, add_charges, remove_item, get_items
+        // Look at ItemStack for how to implement vehicle_stack.
+
         // TODO: How abrupt is this?
         DOC( "Reduces velocity to zero." );
         SET_FX_T( stop, void( bool ) );
+
+        SET_FX_T( damage, int( int, int, damage_type, bool ) );
+
+        // TODO: turrets() and associated
 
         // This...is kind of a mess—the integer seems to be an index to a
         // specific group of parts (in this case, engines).
@@ -111,57 +141,63 @@ void cata::detail::reg_vehicle( sol::state &lua )
 
         // Using auto to be concise; the return value is already listed in the
         // lambda definitions.
-        DOC( "Returns integers corresponding to all alternators in the vehicle." );
+        DOC( "Returns part numbers for all alternators in the vehicle." );
         luna::set_fx( ut, "get_alternator_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.alternators; return rv; } );
-        DOC( "Returns integers corresponding to all engines in the vehicle." );
+        DOC( "Returns part numbers for all engines in the vehicle." );
         luna::set_fx( ut, "get_engine_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.engines; return rv; } );
-        DOC( "Returns integers corresponding to all reactors in the vehicle." );
+        DOC( "Returns part numbers for all reactors in the vehicle." );
         luna::set_fx( ut, "get_reactor_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.reactors; return rv; } );
-        DOC( "Returns integers corresponding to all solar panels on the vehicle." );
+        DOC( "Returns part numbers for all solar panels on the vehicle." );
         luna::set_fx( ut, "get_solar_panel_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.solar_panels; return rv; } );
-        DOC( "Returns integers corresponding to all wind turbines on the vehicle." );
+        DOC( "Returns part numbers for all wind turbines on the vehicle." );
         luna::set_fx( ut, "get_wind_turbine_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.wind_turbines; return rv; } );
-        DOC( "Returns integers corresponding to all water wheels on the vehicle." );
+        DOC( "Returns part numbers for all water wheels on the vehicle." );
         luna::set_fx( ut, "get_water_wheel_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.water_wheels; return rv; } );
-        DOC( "Returns integers corresponding to all sails on the vehicle." );
+        DOC( "Returns part numbers for all sails on the vehicle." );
         luna::set_fx( ut, "get_sail_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.sails; return rv; } );
-        DOC( "Returns integers corresponding to all funnels on the vehicle." );
+        DOC( "Returns part numbers for all funnels on the vehicle." );
         luna::set_fx( ut, "get_funnel_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.funnels; return rv; } );
-        DOC( "Returns integers corresponding to all emitters in the vehicle." );
+        DOC( "Returns part numbers for all emitters in the vehicle." );
         luna::set_fx( ut, "get_emitter_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.emitters; return rv; } );
-        DOC( "Returns integers corresponding to all UNMOUNT_ON_MOVE parts on the vehicle." );
+        DOC( "Returns part numbers for all UNMOUNT_ON_MOVE parts on the vehicle." );
         luna::set_fx( ut, "get_loose_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.loose_parts; return rv; } );
-        DOC( "Returns integers corresponding to all wheels on the vehicle." );
+        DOC( "Returns part numbers for all wheels on the vehicle." );
         luna::set_fx( ut, "get_wheel_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.wheelcache; return rv; } );
-        DOC( "Returns integers corresponding to all rotors on the vehicle." );
+        DOC( "Returns part numbers for all rotors on the vehicle." );
         luna::set_fx( ut, "get_rotor_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.rotors; return rv; } );
-        DOC( "Returns integers corresponding to all (rail) wheels on the vehicle." );
+        DOC( "Returns part numbers for all (rail) wheels on the vehicle." );
         luna::set_fx( ut, "get_rail_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.rail_wheelcache; return rv; } );
-        DOC( "Returns integers corresponding to all steerable parts on the vehicle." );
+        DOC( "Returns part numbers for all steerable parts on the vehicle." );
         luna::set_fx( ut, "get_steering_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.steering; return rv; } );
-        DOC( "Returns integers corresponding to all 'specialty' parts in the vehicle." );
+        DOC( "Returns part numbers for all 'specialty' parts in the vehicle." );
         luna::set_fx( ut, "get_specialty_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.speciality; return rv; } );
-        DOC( "Returns integers corresponding to all buoyant parts on the vehicle." );
+        DOC( "Returns part numbers for all buoyant parts on the vehicle." );
         luna::set_fx( ut, "get_buoyant_inds", []( UT_CLASS & vp ) -> std::vector<int> {
             auto rv = vp.floating; return rv; } );
 
+        // Given as a function since this seems to be standard in Lua bindings (TODO: confirm?)
+        DOC( "The name of the vehicle." );
+        luna::set_fx( ut, "name", []( UT_CLASS & vh ) -> std::string { return vh.name; } );
+
         DOC( "Coordinates of the submap containing the vehicle." );
         SET_MEMB_RO( sm_pos );
+        DOC( "Alternator load as a percentage of vehicle power." );
+        SET_MEMB_RO( alternator_load );
         DOC( "Position of the vehicle inside its containing submap." );
         SET_MEMB_RO( pos );
 
@@ -193,14 +229,42 @@ void cata::detail::reg_vehicle_part( sol::state &lua )
         } );
 
         luna::set( ut, "id", sol::property( &UT_CLASS::info ) );
+
+        SET_FX( ammo_current );
+        SET_FX( ammo_capacity );
+        SET_FX( ammo_remaining );
+        SET_FX_T( ammo_set, int( const itype_id &, int ) );
+        SET_FX( ammo_unset );
+        // TODO: fill_with; requires detached_ptr<item>
+
+        SET_FX( wheel_area );
+        SET_FX( wheel_diameter );
+        SET_FX( wheel_width );
+
+        SET_FX( is_engine );
+        SET_FX( is_light );
+        SET_FX( is_fuel_store );
+        SET_FX( is_tank );
+        SET_FX( is_battery );
+        SET_FX( is_reactor );
+        SET_FX( is_leaking );
+        SET_FX( is_turret );
+        SET_FX( is_seat );
+
         DOC( "The relative location of this part on its Vehicle." );
         SET_MEMB_N_RO( mount, "mount_point" );
-        // XXX: DO NOT overwrite any of this!
-        // TODO: May be safe to remove now; unclear
-        SET_MEMB_RO( precalc );
+
+        SET_FX( hp );
+        SET_FX( damage );
+        SET_FX( max_damage );
+
+        SET_FX( is_broken );
 
         SET_FX_T( get_base, item & () const );
         // TODO: set_base!
+
+        // TODO: get_items, clear_items, add_item, remove_item
+        // Look into properties_to_item (if it disassembles or clones)
     }
 #undef UT_CLASS // #define UT_CLASS vehicle_part
 }
@@ -223,7 +287,10 @@ void cata::detail::reg_vpart_info( sol::state &lua )
                     st.get_id().c_str() );
         } );
 
-        SET_MEMB_RO( id );
+        luna::set( ut, "id", sol::property( &UT_CLASS::get_id ) );
+
+        SET_FX_T( name, std::string() const );
+
         SET_MEMB_RO( item );
         SET_MEMB_N_RO( location, "layer" );
         SET_MEMB_RO( durability );
@@ -231,6 +298,7 @@ void cata::detail::reg_vpart_info( sol::state &lua )
 
         SET_MEMB_N_RO( power, "net_power" );
 
+        DOC( "How hard the part is to install." );
         SET_MEMB_RO( difficulty );
 
         SET_MEMB_N_RO( cargo_weight_modifier, "cargo_weight_mod" );
@@ -240,7 +308,9 @@ void cata::detail::reg_vpart_info( sol::state &lua )
                 auto rv = vp.damage_reduction.flat; return rv;
         } );
 
-        SET_FX_T( name, std::string() const );
+        SET_FX( wheel_rolling_resistance );
+        SET_FX( wheel_area );
+        SET_FX_N( wheel_or_rating, "wheel_offroad_rating" );
 
         luna::set_fx( ut, "get_all", []() -> std::map<vpart_id, vpart_info> {
             std::map<vpart_id, vpart_info> rv = UT_CLASS::all(); return rv;
