@@ -103,15 +103,29 @@ void cata::detail::reg_vehicle( sol::state &lua )
         SET_FX( fuels_left );
         // TODO: fuel_left overloads
 
+        DOC( "The total mass of a vehicle, including cargo and passengers." );
+        SET_FX_T( total_mass, units::mass() const );
+
+        SET_FX_T( wheel_area, int() const );
+        SET_FX_N_T( average_or_rating, "average_offroad_rating", float() const );
+
+        SET_FX_T( coeff_air_drag, double() const );
+        SET_FX_T( coeff_rolling_drag, double() const );
+        SET_FX_T( coeff_water_drag, double() const );
+
         SET_FX_T( total_rotor_area, double() const );
         SET_FX_T( has_sufficient_rotorlift, bool() const );
         SET_FX( lift_thrust_of_rotorcraft );
-        SET_FX_N_T( k_traction, "coefficient_traction", float( float ) const );
-        SET_FX( static_drag );
 
+        SET_FX_N_T( k_traction, "coeff_traction", float( float ) const );
+        SET_FX( static_drag );
         // TODO: Could this be more specific? What kind of calculation is it used for?
         DOC( "Measurement of the stress applied to engines due to running above safe speed." );
         SET_FX_T( strain, float() const );
+
+        SET_FX_T( steering_effectiveness, float() const );
+        SET_FX_T( handling_difficulty, float() const );
+        // TODO: Look into enumerate_vehicles.
 
         SET_FX_N_T( max_volume, "part_vol_max", units::volume( int ) const );
         SET_FX_N_T( free_volume, "part_vol_free", units::volume( int ) const );
@@ -194,7 +208,7 @@ void cata::detail::reg_vehicle( sol::state &lua )
         DOC( "The name of the vehicle." );
         luna::set_fx( ut, "name", []( UT_CLASS & vh ) -> std::string { return vh.name; } );
 
-        DOC( "Coordinates of the submap containing the vehicle." );
+        DOC( "Coordinates of the (currently loaded) submap containing the vehicle." );
         SET_MEMB_RO( sm_pos );
         DOC( "Alternator load as a percentage of vehicle power." );
         SET_MEMB_RO( alternator_load );
@@ -203,9 +217,18 @@ void cata::detail::reg_vehicle( sol::state &lua )
 
         DOC( "Vehicle velocity, in MPH × 100." );
         SET_MEMB( velocity );
+        SET_MEMB( cruise_velocity );
+        // TODO: Look into om_id (overmap ID/om_vehicle struct)
+
+        SET_MEMB_RO( extra_drag );
 
         // Check gates.cpp:274 and vpart_position.h for uses of
         // optional_vpart_position
+
+        DOC( "Whether the vehicle is currently locked in an uncontrollable skid. Applies to all vehicle types, not just wheeled ones." );
+        SET_MEMB_N_RO( skidding, "is_skidding" );
+        // TODO: Test...
+        SET_MEMB_N_RO( vehicle_noise, "total_noise" );
         
     }
 #undef UT_CLASS // #define UT_CLASS vehicle
@@ -262,6 +285,11 @@ void cata::detail::reg_vehicle_part( sol::state &lua )
 
         SET_FX_T( get_base, item & () const );
         // TODO: set_base!
+        // NOTE: May need an overload with a lambda that makes an item /for/ it,
+        // at least for now.
+        // "new_base"? Take ItypeId, ::spawn, handle detachment?
+
+        // ALSO TODO: Ask Jove/Kheir what a location_ptr is/how to use them
 
         // TODO: get_items, clear_items, add_item, remove_item
         // Look into properties_to_item (if it disassembles or clones)
@@ -293,6 +321,7 @@ void cata::detail::reg_vpart_info( sol::state &lua )
 
         SET_MEMB_RO( item );
         SET_MEMB_N_RO( location, "layer" );
+        SET_MEMB_RO( looks_like );
         SET_MEMB_RO( durability );
         SET_MEMB_N_RO( dmg_mod, "damage_mod" );
 
