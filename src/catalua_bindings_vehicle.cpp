@@ -76,7 +76,7 @@ void cata::detail::reg_vehicle( sol::state &lua )
 
         DOC( "Returns an (int) list of vehicle parts at a given point, relative to the vehicle itself." );
         luna::set_fx( ut, "parts_at_relative",
-            []( UT_CLASS & vehi, point pt, std::optional<bool> cache ) -> std::vector<int> {
+            []( UT_CLASS & vehi, point pt, sol::optional<bool> cache ) -> std::vector<int> {
                 return vehi.parts_at_relative( pt, cache.has_value() ? *cache : true );
             } );
 
