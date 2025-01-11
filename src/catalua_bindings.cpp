@@ -1,4 +1,5 @@
 #include <vpart_position.h>
+#include <weather.h>
 #ifdef LUA
 #include "catalua_bindings.h"
 
@@ -506,6 +507,18 @@ void cata::detail::reg_constants( sol::state &lua )
 {
     DOC( "Various game constants" );
     luna::userlib lib = luna::begin_lib( lua, "const" );
+
+    // This will need modification if/when body temperature is reworked.
+    luna::set( lib, "BTU_FREEZING", BODYTEMP_FREEZING );
+    luna::set( lib, "BTU_VERY_COLD", BODYTEMP_VERY_COLD );
+    luna::set( lib, "BTU_NORM", BODYTEMP_NORM );
+    luna::set( lib, "BTU_HOT", BODYTEMP_HOT );
+    luna::set( lib, "BTU_VERY_HOT", BODYTEMP_VERY_HOT );
+    luna::set( lib, "BTU_SCORCHING", BODYTEMP_SCORCHING );
+
+    luna::set( lib, "INT_MAX", INT_MAX );
+    // Here because it's used as a return value by some functions.
+    luna::set( lib, "INT_MIN", INT_MIN );
 
     luna::set( lib, "OM_OMT_SIZE", OMAPX );
     luna::set( lib, "OM_SM_SIZE", OMAPX * 2 );
