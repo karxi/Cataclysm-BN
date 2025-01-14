@@ -20,7 +20,7 @@ void reg_serde_functions( sol::usertype<T> &ut )
 // SET MEMBer
 #define SET_MEMB(prop_name) luna::set( ut, #prop_name, &UT_CLASS::prop_name )
 // SET MEMBer with Name
-//#define SET_MEMB_N(prop_name, lua_name_str) luna::set( ut, lua_name_str, &UT_CLASS::prop_name )
+#define SET_MEMB_N(prop_name, lua_name_str) luna::set( ut, lua_name_str, &UT_CLASS::prop_name )
 // SET MEMBer, Read-Only
 #define SET_MEMB_RO(prop_name) luna::set( ut, #prop_name, sol::readonly( &UT_CLASS::prop_name ) )
 // SET MEMBer with Name, Read-Only
