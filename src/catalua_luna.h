@@ -288,22 +288,34 @@ void doc_member( sol::table &dt, sol::types<Value Class::*> && )
 }
 
 // Olanti! Curse thee for what I must do!
-// NOTE: This only works with read-only properties (for now).
-// It also has some pretty significant issues with intuiting the type of the
-// property it's working with.
-// TODO: Resolve these issues.
+/* NOTE: This only works with read-only properties (for now).
+ * Writable properties are on the TODO list, but current documentation doesn't really work with them.
+ */
+template<typename GetClass, typename GetVal>
+void doc_member( sol::table &dt,
+                 sol::types<sol::property_wrapper<GetVal (GetClass::*)() const, sol::detail::no_prop>> && )
+{
+    dt[KEY_MEMBER_TYPE] = MEMBER_IS_VAR;
+    add_comment( dt, KEY_MEMBER_COMMENT );
+    /* Short explanation: This needs to exist, alongside the specific use of
+     * "(GetClass::*)() const", because typeid() *does not work* on function
+     * declarations with a trailing 'const'.
+     * As a result, we need a special template that allows us to use typedef
+     * to remove the trailing const.
+     * Yes, this is ugly; yes, I hate it; yes, it took /entirely too long/ to
+     * figure out.
+     */
+    typedef GetVal getter_type;
+    dt[KEY_MEMBER_VARIABLE_TYPE] = doc_value( sol::types<getter_type>() );
+}
+
 template<typename GetClass, typename GetVal>
 void doc_member( sol::table &dt,
                  sol::types<sol::property_wrapper<GetVal GetClass::*, sol::detail::no_prop>> && )
 {
     dt[KEY_MEMBER_TYPE] = MEMBER_IS_VAR;
     add_comment( dt, KEY_MEMBER_COMMENT );
-    /* TODO: Why does this work HERE but not when it's run in doc_value_impl?!
-     * This may prove problematic in the future. Implementing luna_traits might
-     * help avert it for certain types, but I would much prefer the root problem
-     * solved.
-     */
-    dt[KEY_MEMBER_VARIABLE_TYPE] = doc_value( sol::types<std::remove_const<GetVal>>() );
+    dt[KEY_MEMBER_VARIABLE_TYPE] = doc_value( sol::types<GetVal>() );
 }
 
 template<typename Class, typename Value>
