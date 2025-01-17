@@ -1,4 +1,5 @@
 #include <damage.h>
+#include <detached_ptr.h>
 #ifdef LUA
 #include <type_id.h>
 #include "catalua_bindings.h"
@@ -44,6 +45,9 @@ void cata::detail::reg_vehicle( sol::state &lua )
                     luna::detail::luna_traits<UT_CLASS>::name,
                     st.name );
         } );
+
+        SET_FX( suspend_refresh );
+        SET_FX( enable_refresh );
 
         // Considerations:
         // find_vehicle()
@@ -94,14 +98,19 @@ void cata::detail::reg_vehicle( sol::state &lua )
 
         SET_FX_N_T( global_pos3, "get_pos_ms", tripoint() const );
 
-        DOC( "Retrieve global tripoint of vehicle part, akin to Creature.get_pos_ms()." );
+        DOC( "Retrieve global tripoint of given vehicle part, akin to Creature.get_pos_ms()." );
         luna::set_fx( ut, "get_part_pos_ms", sol::overload(
             sol::resolve<tripoint( const int & ) const>( &UT_CLASS::global_part_pos3 ),
             sol::resolve<tripoint( const vehicle_part & ) const>( &UT_CLASS::global_part_pos3 )
             ) );
 
+        DOC( "Returns sum of all fuels in all of the vehicle's tanks (including batteries)." );
         SET_FX( fuels_left );
-        // TODO: fuel_left overloads
+        DOC( "Returns the vehicle's total fuel reserves of a given type (if ItypeId) or the type currently used by the indexed part (if int). Bool is whether or not to recurse to attached vehicles/grids." );
+        luna::set_fx( ut, "fuel_left", sol::overload(
+            sol::resolve<int( const itype_id &, bool ) const>( &UT_CLASS::fuel_left ),
+            sol::resolve<int( int, bool ) const>( &UT_CLASS::fuel_left )
+            ) );
 
         DOC( "The total mass of a vehicle, including cargo and passengers." );
         SET_FX_T( total_mass, units::mass() const );
@@ -259,7 +268,9 @@ void cata::detail::reg_vehicle_part( sol::state &lua )
                     st.info().get_id().c_str() );
         } );
 
-        luna::set( ut, "id", sol::property( &UT_CLASS::info ) );
+        //luna::set( ut, "info_id", sol::property( []() ->  )
+        DOC( "The VPartInfoRaw for this part." );
+        luna::set( ut, "info", sol::property( &UT_CLASS::info ) );
 
         SET_FX( ammo_current );
         SET_FX( ammo_capacity );
@@ -296,6 +307,12 @@ void cata::detail::reg_vehicle_part( sol::state &lua )
         // NOTE: May need an overload with a lambda that makes an item /for/ it,
         // at least for now.
         // "new_base"? Take ItypeId, ::spawn, handle detachment?
+        // "rebase" will require observing repair_part (veh_utils.cpp)
+        // TODO: This technically works, but the vehicle part isn't updated...
+        luna::set_fx( ut, "set_base", []( UT_CLASS & vp, itype_id & nb ) {
+            // Create a new item, swap it in, and dispose of the old one.
+            detached_ptr<item> old_item = vp.set_base( item::spawn( nb ) );
+        } );
 
         // ALSO TODO: Ask Jove/Kheir what a location_ptr is/how to use them
 
